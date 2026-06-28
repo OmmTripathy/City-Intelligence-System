@@ -9,20 +9,18 @@ from langchain.tools import tool
 from rich import print
 from langchain.agents import create_agent
 
-# Used to store conversation history in memory
-from langgraph.checkpoint.memory import InMemorySaver
-
-memory = InMemorySaver()
 
 # Import the Weather Tool
 from tools.weather import get_weather
 
-print(get_weather.invoke("Bhopal"))
 
 # Import the News Tool
 from tools.news import get_news
 
-print(get_news.invoke("Bhopal"))
+
+# Used to store conversation history in memory
+from langgraph.checkpoint.memory import InMemorySaver
+memory = InMemorySaver()
 
 
 llm = ChatMistralAI(
@@ -30,13 +28,30 @@ llm = ChatMistralAI(
     api_key = os.getenv("MISTRAL_API_KEY")
 )
 
+
 # Import human approval
 from middleware.approval import human_approval
+
+SYSTEM_PROMPT = """
+You are a City Intelligence Agent.
+
+Your job is to help users with city-related questions.
+
+Guidelines:
+
+1. Use the Weather Tool for any weather-related question.
+2. Use the News Tool for any latest or recent news.
+3. Never make up weather or news information.
+4. If a tool returns an error, clearly tell the user.
+5. Be polite and professional.
+6. Keep answers short and easy to understand.
+7. If the user asks a general knowledge question, answer it directly without using tools.
+"""
 
 agent = create_agent(
     llm,
     tools = [get_weather,get_news],
-    system_prompt= "you are a helpful city assistant.",
+    system_prompt= SYSTEM_PROMPT,
     middleware= [human_approval],
     checkpointer=memory
 )
