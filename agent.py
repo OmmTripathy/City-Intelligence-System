@@ -55,19 +55,46 @@ agent = create_agent(
     checkpointer=memory
 )
 
-print("City Agent | type exit to quit")
 
-while True:
-    user_input = input("You : ")
-    if user_input.lower() == "exit":
-        break 
+# ============================================================
+#                 🤖 CHAT FUNCTION
+# ============================================================
+
+THREAD_ID = "city-chat"
+
+def chat_with_agent(user_input: str, thread_id: str = THREAD_ID)-> str:
+    """
+    Send a user message to the AI agent and return the response.
+    """
+
     result = agent.invoke(
-    {"messages": [{
-                "role": "user",
-                "content": user_input
-            }]
-    },
-    # Keep using the same conversation
-    config={"configurable": {"thread_id": "city-chat"}})
+        {"messages": [{
+                    "role": "user",
+                    "content": user_input
+                }]
+        },
+        # Keep using the same conversation memory
+        config={"configurable": {"thread_id": thread_id}
+        })
 
-    print("bot : ", result['messages'][-1].content )
+    return result["messages"][-1].content
+
+
+# ============================================================
+#                 💻 TERMINAL MODE
+# ============================================================
+
+if __name__ == "__main__":
+
+    print("City Agent | Type 'exit' to quit.\n")
+
+    while True:
+
+        user_input = input("You : ")
+
+        if user_input.lower() == "exit":
+            break
+
+        response = chat_with_agent(user_input)
+
+        print("Bot :", response)

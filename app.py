@@ -3,6 +3,10 @@
 # ============================================================
 
 from fastapi import FastAPI
+from pydantic import BaseModel
+
+from agent import chat_with_agent
+
 
 # Create the FastAPI application
 app = FastAPI(
@@ -12,15 +16,41 @@ app = FastAPI(
 )
 
 
+# ============================================================
+#                 📨 REQUEST MODEL
+# ============================================================
+
+class ChatRequest(BaseModel):
+    """
+    Model for the user's chat request.
+    """
+
+    message: str
+
+
 @app.get("/")
 def home():
     """
     Home endpoint.
-
-    Visit:
-    http://127.0.0.1:8000
     """
 
     return {
         "message": "Welcome to the City Intelligence Agent API!"
+    }
+
+
+# ============================================================
+#                 🤖 CHAT ENDPOINT
+# ============================================================
+
+@app.post("/chat")
+def chat(request: ChatRequest):
+    """
+    Send a message to the AI agent and return its response.
+    """
+
+    response = chat_with_agent(request.message)
+
+    return {
+        "response": response
     }
