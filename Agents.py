@@ -7,16 +7,16 @@ import requests
 
 from langchain_mistralai import ChatMistralAI
 from langchain.tools import tool
-
 from langchain_core.messages import HumanMessage, ToolMessage
-
 from tavily import TavilyClient
-
+from rich import print
+from langchain.agents import create_agent
+from langchain.agents.middleware import wrap_tool_call
 
 # SECOND - create tools 
 
 # ============================================================
-#                  WEATHER TOOL
+#                 🌦️ WEATHER TOOL
 # ============================================================
 @tool 
 def get_weather(city : str) -> str :
@@ -39,7 +39,7 @@ def get_weather(city : str) -> str :
 
 
 # ============================================================
-#                     NEWS TOOL
+#                    📰 NEWS TOOL
 # ============================================================
 
 tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
@@ -77,7 +77,7 @@ def get_news(city: str) -> str:
     return f"Latest news for {city.title()}:\n\n" + "\n\n".join(news_list)
 
 # ============================================================
-#                  LLM INITIALIZATION
+#                 🧠 LLM INITIALIZATION
 # ============================================================
 
 llm = ChatMistralAI(
@@ -85,65 +85,37 @@ llm = ChatMistralAI(
     api_key = os.getenv("MISTRAL_API_KEY")
 )
 
-tools = {
-    "get_weather": get_weather,
-    "get_news": get_news
-}
+@wrap_tool_call
+def human_approval(request, handler):
+    """Ask for human approval before every tool call."""
 
-llm_with_tool = llm.bind_tools([get_weather, get_news])
-    
+    tool_name = request.tool_call["name"]
 
-# ============================================================
-#                   AGENT LOOP
-# ============================================================
+    confirm = input(f"Agent wants to call '{tool_name}'. Approve? (y/n): ")
 
-messages = []
+    if confirm.lower() not in ["y", "yes"]:
+        return ToolMessage(
+            content="Tool call denied by user.",
+            tool_call_id=request.tool_call["id"]
+        )
 
-print("City Intelligent System")
-print("Type exit to quit")
+    return handler(request)
 
-while True: 
+agent = create_agent(
+    llm,
+    tools = [get_weather,get_news],
+    system_prompt= "you are a helpful city assistant.",
+    middleware= [human_approval]
+)
+
+print("City Agent | type exit to quit")
+
+while True:
     user_input = input("You : ")
     if user_input.lower() == "exit":
-        break
+        break 
+    result = agent.invoke({
+        "messages": [{"role": "user", "content": user_input}]
+    })
 
-    messages.append(HumanMessage(content = user_input))
-
-    while True:
-        result = llm_with_tool.invoke(messages)
-        messages.append(result)
-
-        if result.tool_calls:
-            denied = False
-
-            for tool_call in result.tool_calls:
-
-                tool_name = tool_call["name"]
-
-                # HUMAN IN THE LOOP
-                confirm = input(f"Agent wants to call '{tool_name}' → Approve? (y/n): ")
-
-                if confirm.lower() in ["n", "no"]:
-                    print("Tool call denied. I cannot get the latest information.")
-                    denied = True
-                    break
-
-                # Execute tool
-                tool_result = tools[tool_name].invoke(tool_call["args"])
-
-                messages.append(ToolMessage(
-                        content=tool_result,
-                        tool_call_id=tool_call["id"]
-                    ))
-
-            if denied:
-                break
-
-            continue
-
-        else:
-            print("\nFinal Answer:\n")
-            print(result.content)
-            break
-
-
+    print("bot : ", result['messages'][-1].content )
