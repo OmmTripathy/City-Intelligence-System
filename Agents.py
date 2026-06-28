@@ -37,7 +37,6 @@ def get_weather(city : str) -> str :
 
     return f"weather in {city.title()} is {temp}°C with {desc}. Humidity: {humidity}%. Wind: {wind_speed}km/h"
 
-print(get_weather.invoke("Bhopal"))
 
 # ============================================================
 #                     NEWS TOOL
@@ -77,8 +76,6 @@ def get_news(city: str) -> str:
 
     return f"Latest news for {city.title()}:\n\n" + "\n\n".join(news_list)
 
-print(get_news.invoke("Bhopal"))
-
 # ============================================================
 #                  LLM INITIALIZATION
 # ============================================================
@@ -103,6 +100,7 @@ llm_with_tool = llm.bind_tools([get_weather, get_news])
 messages = []
 
 print("City Intelligent System")
+print("Type exit to quit")
 
 while True: 
     user_input = input("You : ")
@@ -116,28 +114,36 @@ while True:
         messages.append(result)
 
         if result.tool_calls:
+            denied = False
+
             for tool_call in result.tool_calls:
-                tool_name = tool_call['name']
-                
-                #HUMAN in the LOOP
+
+                tool_name = tool_call["name"]
+
+                # HUMAN IN THE LOOP
                 confirm = input(f"Agent wants to call '{tool_name}' → Approve? (y/n): ")
 
-                if confirm.lower() == "n" or confirm.lower() == "no":
-                    print("Tool call denied and I cannot get the latest information!")
+                if confirm.lower() in ["n", "no"]:
+                    print("Tool call denied. I cannot get the latest information.")
+                    denied = True
                     break
 
-                #esxcute tool
+                # Execute tool
                 tool_result = tools[tool_name].invoke(tool_call["args"])
 
                 messages.append(ToolMessage(
-                    content = tool_result,
-                    tool_call_id = tool_call['id']
+                        content=tool_result,
+                        tool_call_id=tool_call["id"]
                     ))
-                
+
+            if denied:
+                break
+
             continue
+
         else:
-            print("final answer : ")
+            print("\nFinal Answer:\n")
             print(result.content)
             break
 
-    
+
