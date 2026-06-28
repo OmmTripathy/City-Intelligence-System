@@ -28,12 +28,20 @@ def get_weather(city : str) -> str :
         return f"Error: {data.get('message', 'Could not fetch weather')}"
 
     temp = data["main"]["temp"]
+    feels_like = data["main"]["feels_like"]
     desc = data["weather"][0]["description"]
     humidity = data["main"]["humidity"]
     wind_speed = data["wind"]["speed"]
+    cloud_cover = data["clouds"]["all"]
+    visibility = data["visibility"]
 
     return (
-        f"Weather in {city.title()} is {temp}°C with {desc}. "
-        f"Humidity: {humidity}%. "
-        f"Wind: {wind_speed} km/h."
-    )
+    f"📍 City: {city.title()}\n\n"
+    f"🌡 Temperature: {temp}°C\n"
+    f"🤗 Feels Like: {feels_like}°C\n"
+    f"☁ Weather: {desc.title()}\n"
+    f"💧 Humidity: {humidity}%\n"
+    f"💨 Wind Speed: {wind_speed} m/s\n"
+    f"👀 Visibility: {visibility / 1000:.1f} km\n"
+    f"☁ Cloud Cover: {cloud_cover}%"
+)
