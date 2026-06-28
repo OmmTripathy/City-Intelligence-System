@@ -15,8 +15,9 @@ from tavily import TavilyClient
 
 # SECOND - create tools 
 
-# weather tool
-
+# ============================================================
+#                  WEATHER TOOL
+# ============================================================
 @tool 
 def get_weather(city : str) -> str :
     """ Get current weather in a city """
@@ -26,8 +27,8 @@ def get_weather(city : str) -> str :
     response = requests.get(url)
     data = response.json()
 
-    if str(data.get("cod")) != "200":
-        return f"Error: data.get('message', 'Could not fetch weather')"
+    if data.get("cod") != 200:
+        return f"Error: {data.get('message', 'Could not fetch weather')}"
 
     temp = data["main"]["temp"]
     desc = data["weather"][0]["description"]
@@ -38,7 +39,9 @@ def get_weather(city : str) -> str :
 
 print(get_weather.invoke("Bhopal"))
 
-# tavily news tool
+# ============================================================
+#                     NEWS TOOL
+# ============================================================
 
 tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
@@ -76,8 +79,65 @@ def get_news(city: str) -> str:
 
 print(get_news.invoke("Bhopal"))
 
+# ============================================================
+#                  LLM INITIALIZATION
+# ============================================================
 
+llm = ChatMistralAI(
+    model = "mistral-small-2506",
+    api_key = os.getenv("MISTRAL_API_KEY")
+)
+
+tools = {
+    "get_weather": get_weather,
+    "get_news": get_news
+}
+
+llm_with_tool = llm.bind_tools([get_weather, get_news])
     
-    
+
+# ============================================================
+#                   AGENT LOOP
+# ============================================================
+
+messages = []
+
+print("City Intelligent System")
+
+while True: 
+    user_input = input("You : ")
+    if user_input.lower() == "exit":
+        break
+
+    messages.append(HumanMessage(content = user_input))
+
+    while True:
+        result = llm_with_tool.invoke(messages)
+        messages.append(result)
+
+        if result.tool_calls:
+            for tool_call in result.tool_calls:
+                tool_name = tool_call['name']
+                
+                #HUMAN in the LOOP
+                confirm = input(f"Agent wants to call '{tool_name}' → Approve? (y/n): ")
+
+                if confirm.lower() == "n" or confirm.lower() == "no":
+                    print("Tool call denied and I cannot get the latest information!")
+                    break
+
+                #esxcute tool
+                tool_result = tools[tool_name].invoke(tool_call["args"])
+
+                messages.append(ToolMessage(
+                    content = tool_result,
+                    tool_call_id = tool_call['id']
+                    ))
+                
+            continue
+        else:
+            print("final answer : ")
+            print(result.content)
+            break
 
     
