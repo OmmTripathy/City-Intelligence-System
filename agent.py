@@ -9,7 +9,10 @@ from langchain.tools import tool
 from rich import print
 from langchain.agents import create_agent
 
+# Used to store conversation history in memory
+from langgraph.checkpoint.memory import InMemorySaver
 
+memory = InMemorySaver()
 
 # Import the Weather Tool
 from tools.weather import get_weather
@@ -34,7 +37,8 @@ agent = create_agent(
     llm,
     tools = [get_weather,get_news],
     system_prompt= "you are a helpful city assistant.",
-    middleware= [human_approval]
+    middleware= [human_approval],
+    checkpointer=memory
 )
 
 print("City Agent | type exit to quit")
@@ -43,8 +47,13 @@ while True:
     user_input = input("You : ")
     if user_input.lower() == "exit":
         break 
-    result = agent.invoke({
-        "messages": [{"role": "user", "content": user_input}]
-    })
+    result = agent.invoke(
+    {"messages": [{
+                "role": "user",
+                "content": user_input
+            }]
+    },
+    # Keep using the same conversation
+    config={"configurable": {"thread_id": "city-chat"}})
 
     print("bot : ", result['messages'][-1].content )
