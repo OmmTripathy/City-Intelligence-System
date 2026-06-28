@@ -44,11 +44,14 @@ never guess current information, answer general knowledge questions directly wit
 clearly communicate tool errors, and keep responses concise, clear, and easy to understand.
 """
 
+# Every time the agent runs, save information like: what is que, what time , which tool used, final answer.
+from middleware.logger import tool_logger
+
 agent = create_agent(
     llm,
     tools = [get_weather,get_news],
     system_prompt= SYSTEM_PROMPT,
-    middleware= [human_approval],
+    middleware= [tool_logger, human_approval],
     checkpointer=memory
 )
 
