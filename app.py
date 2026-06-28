@@ -6,13 +6,33 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 from agent import chat_with_agent
-
+from fastapi.middleware.cors import CORSMiddleware
 
 # Create the FastAPI application
 app = FastAPI(
     title="City Intelligence Agent",
     description="API for interacting with the City Intelligence Agent",
     version="1.0.0"
+)
+
+# ============================================================
+#                    CORS CONFIGURATION
+# ============================================================
+
+app.add_middleware(
+    CORSMiddleware,
+
+    # Allow requests from any frontend (development only)
+    allow_origins=["*"],
+
+    # Allow cookies if needed
+    allow_credentials=True,
+
+    # Allow all HTTP methods (GET, POST, etc.)
+    allow_methods=["*"],
+
+    # Allow all headers
+    allow_headers=["*"],
 )
 
 
