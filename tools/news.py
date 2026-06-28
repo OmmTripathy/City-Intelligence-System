@@ -12,7 +12,18 @@ tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 @tool
 def get_news(city: str) -> str:
-    """Get latest news about the city."""
+    """
+    Get the latest news for a city.
+    
+    Use this tool when the user asks about: 
+    - today's news 
+    - recent events
+    - traffic disruptions
+    - festivals
+    - protests
+    - road closures
+    - public events
+    """
 
     response = tavily_client.search(
     query=f"Latest news about {city}",

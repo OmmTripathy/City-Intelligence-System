@@ -9,7 +9,18 @@ from langchain.tools import tool
 
 @tool 
 def get_weather(city : str) -> str :
-    """ Get current weather in a city """
+    """ 
+    Get the current weather for a city.
+
+    Use this tool when the user asks about:
+    - weather
+    - rain
+    - temperature
+    - humidity
+    - outdoor activities
+    - sightseeing
+    - travel planning
+    """
 
     # Read API key from the .env file
     api_key = os.getenv("OPENWEATHER_API_KEY")

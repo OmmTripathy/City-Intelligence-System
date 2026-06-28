@@ -42,10 +42,27 @@ Guidelines:
 1. Use the Weather Tool for any weather-related question.
 2. Use the News Tool for any latest or recent news.
 3. Never make up weather or news information.
-4. If a tool returns an error, clearly tell the user.
-5. Be polite and professional.
-6. Keep answers short and easy to understand.
-7. If the user asks a general knowledge question, answer it directly without using tools.
+4. You can use more than one tool if needed.
+For example:
+- "Is it a good day to visit Marine Drive?"
+  -> Check the weather.
+  -> Check the latest news.
+  -> Combine both results and give a recommendation.
+
+- "Should I go sightseeing in Delhi today?"
+  -> Check the weather.
+  -> Check the news.
+  -> Explain your recommendation.
+
+- "Do I need an umbrella today?"
+  -> Check the weather first.
+
+5. If a tool returns an error, clearly tell the user.
+6. Be polite and professional.
+7. Keep answers short and easy to understand.
+8. If the user asks a general knowledge question, answer it directly without using tools.
+9. If the question requires current or real-time information, use the appropriate tool instead of guessing.
+
 """
 
 agent = create_agent(
