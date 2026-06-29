@@ -9,5 +9,4 @@ tavily-python
 requests
 rich
 
-fastapi
-uvicorn
+streamlit

@@ -1,124 +1,45 @@
-# ============================================================
-#                 IMPORT LIBRARIES
-# ============================================================
-
-import uuid
 import streamlit as st
-
-from agent import chat_with_agent
-
-
-# ============================================================
-#                 PAGE CONFIGURATION
-# ============================================================
+from agent import chat_with_agent   # Change "main" if your file has another name
 
 st.set_page_config(
     page_title="City Intelligence Agent",
     page_icon="🌍",
-    layout="wide"
+    layout="centered"
 )
 
-
-# ============================================================
-#                 PAGE TITLE
-# ============================================================
-
 st.title("🌍 City Intelligence Agent")
-st.caption("Ask anything about a city.")
+st.caption("Ask about weather, news, or any city-related information.")
 
-
-# ============================================================
-#                 SESSION STATE
-# ============================================================
-
-# Store conversation history
+# Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Store thread ID for LangGraph memory
-if "thread_id" not in st.session_state:
-    st.session_state.thread_id = str(uuid.uuid4())
-
-
-# ============================================================
-#                 SIDEBAR
-# ============================================================
-
-with st.sidebar:
-
-    st.header("About")
-
-    st.write("""
-This AI Agent can:
-
-- 🌤️ Check Weather
-- 📰 Fetch Latest News
-- 🤖 Answer General Questions
-
-Built using:
-- Streamlit
-- LangChain
-- Mistral AI
-- Tavily
-- OpenWeather API
-""")
-
-    if st.button("🗑️ Clear Chat"):
-        st.session_state.messages = []
-        st.session_state.thread_id = str(uuid.uuid4())
-        st.rerun()
-
-
-# ============================================================
-#                 DISPLAY OLD MESSAGES
-# ============================================================
-
+# Display previous messages
 for message in st.session_state.messages:
-
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# Chat input
+prompt = st.chat_input("Ask something...")
 
-# ============================================================
-#                 CHAT INPUT
-# ============================================================
-
-user_prompt = st.chat_input("Ask me something...")
-
-
-# ============================================================
-#                 PROCESS USER MESSAGE
-# ============================================================
-
-if user_prompt:
+if prompt:
 
     # Show user message
     st.session_state.messages.append(
-        {
-            "role": "user",
-            "content": user_prompt
-        }
+        {"role": "user", "content": prompt}
     )
 
     with st.chat_message("user"):
-        st.markdown(user_prompt)
+        st.markdown(prompt)
 
-    # Generate AI response
+    # Get AI response
     with st.chat_message("assistant"):
-
         with st.spinner("Thinking..."):
-
-            response = chat_with_agent(
-                user_prompt,
-                thread_id=st.session_state.thread_id
-            )
+            response = chat_with_agent(prompt)
 
         st.markdown(response)
 
-    # Save AI response
+    # Save assistant response
     st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": response
-        }
+        {"role": "assistant", "content": response}
     )
