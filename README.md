@@ -1,69 +1,87 @@
+<div align="center">
+
 # 🌍 City Intelligence Agent
 
-An AI-powered City Intelligence Agent built using **LangChain**, **Mistral AI**, **Streamlit**, and **Tool Calling**. The agent can answer city-related questions by intelligently deciding when to use external tools such as Weather and News APIs.
+> An AI agent that answers city-related questions using real-time weather and news —
+> powered by LangChain tool calling and Mistral AI.
+
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=flat-square&logo=langchain&logoColor=white)
+![Mistral AI](https://img.shields.io/badge/Mistral_AI-FF7000?style=flat-square)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)
+
+</div>
 
 ---
 
-## ✨ Features
+## What It Does
 
-* 🌤️ Real-time Weather Information
-* 📰 Latest City News
-* 🤖 AI Agent with Tool Calling
-* 🧠 Conversation Memory
-* 💬 Streamlit Chat Interface
-* 📋 Human-in-the-Loop Tool Approval (Optional)
-* 📝 Tool Call Logging
-* ⚡ Clean and Modular Project Structure
+Ask the agent anything about a city — it reasons about whether it needs live data,
+calls the right tool (weather or news), and returns a grounded natural language response.
 
----
+```
+"Should I carry an umbrella in Bangalore today?"
+"Latest news about Mumbai."
+"Is it a good weekend to visit Jaipur?"
+```
 
-## 🛠️ Tech Stack
-
-### AI & LLM
-
-* LangChain
-* Mistral AI
-
-### UI
-
-* Streamlit
-
-### APIs
-
-* OpenWeather API
-* Tavily Search API
-
-### Python Libraries
-
-* Requests
-* Python Dotenv
-* Rich
+No hardcoded answers. The agent decides what to look up and when.
 
 ---
 
-## 📂 Project Structure
+## How It Works
+
+```
+User Question → Streamlit UI → LangChain Agent → Reasoning
+                                                      │
+                                            ┌─────────┴─────────┐
+                                            ▼                   ▼
+                                       Weather Tool         News Tool
+                                       (OpenWeather)        (Tavily)
+                                            └─────────┬─────────┘
+                                                      ▼
+                                              Final AI Response
+```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| LLM | Mistral AI |
+| Agent Framework | LangChain |
+| UI | Streamlit |
+| Weather Data | OpenWeather API |
+| News & Search | Tavily Search API |
+| Language | Python |
+
+---
+
+## Key Concepts Implemented
+
+- **Tool Calling** — agent dynamically decides which tools to invoke based on the query
+- **Conversation Memory** — context retained across turns in the same session
+- **Prompt Engineering** — custom system prompt shaping agent reasoning behavior
+- **Middleware Layer** — optional human-in-the-loop tool approval + structured logging
+- **Modular Architecture** — tools, prompts, middleware cleanly separated
+
+---
+
+## Project Structure
 
 ```
 Backend/
-│
-├── app.py                 # Streamlit application
-├── agent.py               # AI Agent
-│
+├── app.py                 # Streamlit UI
+├── agent.py               # LangChain agent setup
 ├── tools/
-│   ├── weather.py
-│   └── news.py
-│
+│   ├── weather.py         # OpenWeather tool
+│   └── news.py            # Tavily search tool
 ├── middleware/
-│   ├── approval.py
-│   └── logger.py
-│
-├── prompts/
-│   └── system_prompt.py
-│
+│   ├── approval.py        # Human-in-the-loop approval
+│   └── logger.py          # Tool call logging
 ├── logs/
 │   └── agent.log
-│
-├── .env
 ├── .env.example
 ├── requirements.txt
 └── .gitignore
@@ -71,106 +89,38 @@ Backend/
 
 ---
 
-## 🚀 How It Works
-
-```
-User Question
-      │
-      ▼
-Streamlit UI
-      │
-      ▼
-LangChain Agent
-      │
-      ▼
-Reasoning
-      │
- ┌────┴────┐
- ▼         ▼
-Weather   News
- Tool      Tool
- └────┬────┘
-      ▼
-Final AI Response
-```
-
-The agent first understands the user's question, decides whether external information is required, invokes the appropriate tool(s), and combines the results into a natural language response.
-
----
-
-## 📸 Example Questions
-
-* What's the weather in Delhi?
-* Latest news about Mumbai.
-* Is it a good day to visit Marine Drive?
-* Should I carry an umbrella in Bangalore today?
-* Is Jaipur a good place to visit this weekend?
-
----
-
-## ⚙️ Installation
-
-Clone the repository
+## Setup
 
 ```bash
+# Clone the repo
 git clone <repository-url>
-```
-
-Go to the project directory
-
-```bash
 cd Backend
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Configure environment variables
+cp .env.example .env
 ```
 
-Install dependencies
-
-```bash
-python -m pip install -r requirements.txt
-```
-
-Create a `.env` file
-
+Add your keys to `.env`:
 ```env
 MISTRAL_API_KEY=your_key
 OPENWEATHER_API_KEY=your_key
 TAVILY_API_KEY=your_key
 ```
 
-Run the application
-
+Run the app:
 ```bash
-python -m streamlit run app.py
+streamlit run app.py
 ```
 
 ---
 
-## 🧠 Concepts Practiced
+## Roadmap
 
-* AI Agents
-* Tool Calling
-* Prompt Engineering
-* Conversation Memory
-* Middleware
-* Modular Python Project Structure
-* Streamlit
-* Environment Variables
-* API Integration
-
----
-
-## 🎯 Future Improvements
-
-* Location-based recommendations
-* Maps Integration
-* Multi-tool reasoning
-* Restaurant Finder
-* Hotel Recommendations
-* Travel Planner
-* Event Discovery
-* AI-generated Trip Itineraries
-
----
-
-## 👨‍💻 Author
-
-Built as a project to learn **Generative AI**, **AI Agents**, **LangChain**, and **LLM Application Development** through project-based learning.
+- [ ] Maps integration
+- [ ] Multi-tool reasoning chains
+- [ ] Restaurant and hotel recommendations
+- [ ] AI-generated trip itineraries
+- [ ] Event discovery by city
