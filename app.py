@@ -1,76 +1,124 @@
 # ============================================================
-#                    🌐 FASTAPI SERVER
+#                 IMPORT LIBRARIES
 # ============================================================
 
-from fastapi import FastAPI
-from pydantic import BaseModel
+import uuid
+import streamlit as st
 
 from agent import chat_with_agent
-from fastapi.middleware.cors import CORSMiddleware
 
-# Create the FastAPI application
-app = FastAPI(
-    title="City Intelligence Agent",
-    description="API for interacting with the City Intelligence Agent",
-    version="1.0.0"
-)
 
 # ============================================================
-#                    CORS CONFIGURATION
+#                 PAGE CONFIGURATION
 # ============================================================
 
-app.add_middleware(
-    CORSMiddleware,
-
-    # Allow requests from any frontend (development only)
-    allow_origins=["*"],
-
-    # Allow cookies if needed
-    allow_credentials=True,
-
-    # Allow all HTTP methods (GET, POST, etc.)
-    allow_methods=["*"],
-
-    # Allow all headers
-    allow_headers=["*"],
+st.set_page_config(
+    page_title="City Intelligence Agent",
+    page_icon="🌍",
+    layout="wide"
 )
 
 
 # ============================================================
-#                 📨 REQUEST MODEL
+#                 PAGE TITLE
 # ============================================================
 
-class ChatRequest(BaseModel):
-    """
-    Model for the user's chat request.
-    """
-
-    message: str
-
-
-@app.get("/")
-def home():
-    """
-    Home endpoint.
-    """
-
-    return {
-        "message": "Welcome to the City Intelligence Agent API!"
-    }
+st.title("🌍 City Intelligence Agent")
+st.caption("Ask anything about a city.")
 
 
 # ============================================================
-#                 🤖 CHAT ENDPOINT
+#                 SESSION STATE
 # ============================================================
 
-@app.post("/chat")
-def chat(request: ChatRequest):
-    """
-    Send a message to the AI agent and return its response.
-    """
+# Store conversation history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    response = chat_with_agent(request.message)
+# Store thread ID for LangGraph memory
+if "thread_id" not in st.session_state:
+    st.session_state.thread_id = str(uuid.uuid4())
 
-    return {
-        "response": response
-    }
+
+# ============================================================
+#                 SIDEBAR
+# ============================================================
+
+with st.sidebar:
+
+    st.header("About")
+
+    st.write("""
+This AI Agent can:
+
+- 🌤️ Check Weather
+- 📰 Fetch Latest News
+- 🤖 Answer General Questions
+
+Built using:
+- Streamlit
+- LangChain
+- Mistral AI
+- Tavily
+- OpenWeather API
+""")
+
+    if st.button("🗑️ Clear Chat"):
+        st.session_state.messages = []
+        st.session_state.thread_id = str(uuid.uuid4())
+        st.rerun()
+
+
+# ============================================================
+#                 DISPLAY OLD MESSAGES
+# ============================================================
+
+for message in st.session_state.messages:
+
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+
+# ============================================================
+#                 CHAT INPUT
+# ============================================================
+
+user_prompt = st.chat_input("Ask me something...")
+
+
+# ============================================================
+#                 PROCESS USER MESSAGE
+# ============================================================
+
+if user_prompt:
+
+    # Show user message
+    st.session_state.messages.append(
+        {
+            "role": "user",
+            "content": user_prompt
+        }
+    )
+
+    with st.chat_message("user"):
+        st.markdown(user_prompt)
+
+    # Generate AI response
+    with st.chat_message("assistant"):
+
+        with st.spinner("Thinking..."):
+
+            response = chat_with_agent(
+                user_prompt,
+                thread_id=st.session_state.thread_id
+            )
+
+        st.markdown(response)
+
+    # Save AI response
+    st.session_state.messages.append(
+        {
+            "role": "assistant",
+            "content": response
+        }
+    )

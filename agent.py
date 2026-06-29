@@ -29,9 +29,6 @@ llm = ChatMistralAI(
 )
 
 
-# Import human approval
-from middleware.approval import human_approval
-
 SYSTEM_PROMPT = """
 You are a City Intelligence Agent.
 
@@ -51,7 +48,7 @@ agent = create_agent(
     llm,
     tools = [get_weather,get_news],
     system_prompt= SYSTEM_PROMPT,
-    middleware= [tool_logger, human_approval],
+    middleware= [tool_logger],
     checkpointer=memory
 )
 
