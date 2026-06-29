@@ -1,36 +1,36 @@
-# ============================================================
-#                 📝 LOGGING MIDDLEWARE
-# ============================================================
-
-
 import logging
-from langchain.agents.middleware import wrap_tool_call
+import os
+from datetime import datetime
+from typing import Any, Dict
+from langchain_core.callbacks import BaseCallbackHandler
 
+os.makedirs("logs", exist_ok=True)
 
-# Configure logging
 logging.basicConfig(
-    filename="agent.log",       # Log file name
-    level=logging.INFO,         # Log INFO and above
-    format="%(asctime)s - %(message)s"
+    filename="logs/agent.log",
+    level=logging.INFO,
+    format="%(asctime)s | %(message)s"
 )
+logger = logging.getLogger(__name__)
 
 
-@wrap_tool_call
-def tool_logger(request, handler):
-    """
-    Log every tool call made by the AI agent.
-    """
+class ToolLogger(BaseCallbackHandler):
+    """Logs every tool call: name, input, output, and timestamp."""
 
-    # Get the tool name
-    tool_name = request.tool_call["name"]
+    def on_tool_start(
+        self, serialized: Dict[str, Any], input_str: str, **kwargs
+    ) -> None:
+        tool_name = serialized.get("name", "unknown")
+        logger.info(f"[TOOL CALL]   tool={tool_name} | input={input_str}")
+        print(f"[LOG] Tool called: [bold]{tool_name}[/bold] | input: {input_str}")
 
-    # Log before execution
-    logging.info(f"Calling Tool: {tool_name}")
+    def on_tool_end(self, output: str, **kwargs) -> None:
+        preview = output[:300] + ("..." if len(output) > 300 else "")
+        logger.info(f"[TOOL RESULT] output={preview}")
 
-    # Execute the tool
-    result = handler(request)
+    def on_tool_error(self, error: Exception, **kwargs) -> None:
+        logger.error(f"[TOOL ERROR]  {error}")
 
-    # Log after execution
-    logging.info(f"Finished Tool: {tool_name}")
 
-    return result
+# Export a single shared instance
+tool_logger = ToolLogger()
